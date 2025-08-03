@@ -95,6 +95,7 @@ class ControllerInterface {
     }
 
     /**
+     * @abstract
      * @brief Gets the controlled DOM element
      * @return {HTMLElement} The controlled element
      */
@@ -102,6 +103,7 @@ class ControllerInterface {
     }
 
     /**
+     * @abstract
      * @brief Gets the document instance used for global events
      * @return {Document} The document instance
      */
@@ -109,6 +111,7 @@ class ControllerInterface {
     }
 
     /**
+     * @abstract
      * @brief Gets the current enabled state of the controller
      * @return {boolean} True if active, false if inactive
      */
@@ -116,6 +119,7 @@ class ControllerInterface {
     }
 
     /**
+     * @abstract
      * @brief Sets the enabled state of the controller
      * @param {boolean} enabled - Whether to enable or disable
      * @return void
@@ -124,6 +128,7 @@ class ControllerInterface {
     }
 
     /**
+     * @abstract
      * @brief Registers a callback for a specific event
      * @param {string} event - Event name to register handler for
      * @param {function} callback - Callback function to register
@@ -133,6 +138,7 @@ class ControllerInterface {
     }
 
     /**
+     * @abstract
      * @brief Unregisters a callback for a specific event
      * @param {string} event - Event name to unregister from
      * @param {function} callback - Callback function to remove
@@ -142,6 +148,7 @@ class ControllerInterface {
     }
 
     /**
+     * @abstract
      * @brief Triggers registered handlers for a specific event
      * @param {string} event - Event name to trigger
      * @param {...*} args - Arguments to pass to handlers
@@ -151,12 +158,14 @@ class ControllerInterface {
     }
 
     /**
+     * @abstract
      * @brief Abstract method to initialize the controller
      */
     initialize() {
     }
 
     /**
+     * @abstract
      * @brief Abstract method to clean up controller resources
      */
     dispose() {
@@ -211,6 +220,7 @@ class AbstractController extends ControllerInterface {
     }
 
     /**
+     * @override
      * @brief Gets the controlled DOM element
      * @return {HTMLElement} The controlled element
      */
@@ -219,6 +229,7 @@ class AbstractController extends ControllerInterface {
     }
 
     /**
+     * @override
      * @brief Gets the document instance used for global events
      * @return {Document} The document instance
      */
@@ -227,6 +238,7 @@ class AbstractController extends ControllerInterface {
     }
 
     /**
+     * @override
      * @brief Gets the current enabled state of the controller
      * @return {boolean} True if enabled, false if disabled
      */
@@ -235,6 +247,7 @@ class AbstractController extends ControllerInterface {
     }
 
     /**
+     * @override
      * @brief Sets the enabled state of the controller
      * @param {boolean} enabled - Whether to enable or disable
      * @return void
@@ -244,6 +257,7 @@ class AbstractController extends ControllerInterface {
     }
 
     /**
+     * @override
      * @brief Registers a callback for a specific event
      * @param {string} event - Event name to register handler for
      * @param {function} callback - Callback function to register
@@ -258,6 +272,7 @@ class AbstractController extends ControllerInterface {
     }
 
     /**
+     * @override
      * @brief Unregisters a callback for a specific event
      * @param {string} event - Event name to unregister from
      * @param {function} callback - Callback function to remove
@@ -271,6 +286,7 @@ class AbstractController extends ControllerInterface {
     }
 
     /**
+     * @override
      * @brief Triggers registered handlers for a specific event
      * @param {string} event - Event name to trigger
      * @param {...*} args - Arguments to pass to handlers
@@ -383,6 +399,7 @@ class MouseController extends AbstractController {
     }
 
     /**
+     * @override
      * @brief Initializes the mouse controller
      *
      * Sets up event listeners on both the element (for mousedown, mouseenter, mouseleave)
@@ -398,6 +415,7 @@ class MouseController extends AbstractController {
     }
 
     /**
+     * @override
      * @brief Cleans up the mouse controller
      *
      * Removes all event listeners and deactivates the controller.
@@ -530,8 +548,8 @@ class TouchController extends AbstractController {
     }
 
     /**
-     * @brief Initializes the touch controller
      * @override
+     * @brief Initializes the touch controller
      *
      * Sets up event listeners on the element for touch events
      * and activates the controller.
@@ -545,8 +563,8 @@ class TouchController extends AbstractController {
     }
 
     /**
-     * @brief Cleans up the touch controller
      * @override
+     * @brief Cleans up the touch controller
      *
      * Removes all event listeners and deactivates the controller.
      * Should be called when the controller is no longer needed.
@@ -571,7 +589,7 @@ class TouchController extends AbstractController {
  * It propagates lifecycle methods (enable/disable/initialize/dispose)
  * and events to all registered sub-controllers.
  */
-class MultiController extends ControllerInterface {
+class MultiController extends AbstractController {
     /**
      * @brief Constructor for MultiController
      * @param {HTMLElement} element - DOM element associated with this controller
@@ -582,12 +600,6 @@ class MultiController extends ControllerInterface {
      */
     constructor(element, doc = document) {
         super(element, doc);
-
-        /**
-         * @property {boolean} __enabled - Activation state of the controller
-         * @private
-         */
-        this.__enabled = false;
 
         /**
          * @property {Array<ControllerInterface>} __controllers - Registered sub-controllers
@@ -652,14 +664,6 @@ class MultiController extends ControllerInterface {
     }
 
     /**
-     * @brief Gets the current enabled state of the controller
-     * @return {boolean} True if active, false if inactive
-     */
-    getEnabled() {
-        return this.__enabled;
-    }
-
-    /**
      * @override
      * @brief Sets the enabled state of all managed controllers
      * @param {boolean} enabled - Whether to enable or disable the controllers
@@ -668,13 +672,14 @@ class MultiController extends ControllerInterface {
      * it to all registered sub-controllers.
      */
     setEnabled(enabled) {
-        this.__enabled = enabled;
+        super.setEnabled(enabled);
         this.__controllers.forEach(controller => {
             controller.setEnabled(enabled);
         });
     }
 
     /**
+     * @override
      * @brief Initializes all managed controllers
      *
      * Initializes this controller and propagates
@@ -688,6 +693,7 @@ class MultiController extends ControllerInterface {
     }
 
     /**
+     * @override
      * @brief Disposes all managed controllers
      *
      * Disposes this controller and propagates
@@ -712,6 +718,7 @@ class MultiController extends ControllerInterface {
     }
 
     /**
+     * @override
      * @brief Triggers an event on all managed controllers
      *
      * @param {string} event - Event name to trigger
@@ -722,6 +729,7 @@ class MultiController extends ControllerInterface {
      * and propagates it to all registered sub-controllers.
      */
     trigger(event, ...args) {
+        super.trigger(event, ...args);
         if (this.getEnabled()) {
             this.__controllers.forEach(controller => {
                 controller.trigger(event, ...args);
