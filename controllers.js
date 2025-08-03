@@ -607,7 +607,7 @@ class MultiController extends AbstractController {
             }
             return this;
         }
-        throw new Error("");
+        throw new Error("Parameter must be an instance of ControllerInterface");
     }
 
     /**
