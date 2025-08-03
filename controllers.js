@@ -646,9 +646,8 @@ class MultiController extends AbstractController {
     }
 
     /**
-     * @brief Sets the enabled state of all managed controllers
      * @override
-     *
+     * @brief Sets the enabled state of all managed controllers
      * @param {boolean} enabled - Whether to enable or disable the controllers
      *
      * Sets the enabled state of this controller and propagates
@@ -663,7 +662,6 @@ class MultiController extends AbstractController {
 
     /**
      * @brief Initializes all managed controllers
-     * @override
      *
      * Initializes this controller and propagates
      * the initialize call to all registered sub-controllers.
@@ -677,7 +675,6 @@ class MultiController extends AbstractController {
 
     /**
      * @brief Disposes all managed controllers
-     * @override
      *
      * Disposes this controller and propagates
      * the dispose call to all registered sub-controllers,
@@ -691,8 +688,8 @@ class MultiController extends AbstractController {
     }
 
     /**
-     * @brief Triggers an event on all managed controllers
      * @override
+     * @brief Triggers an event on all managed controllers
      *
      * @param {string} event - Event name to trigger
      * @param {...*} args - Arguments to pass to event handlers
