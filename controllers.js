@@ -135,6 +135,7 @@ class Controller {
 
     /**
      * @brief Enables the controller
+     * @return void
      *
      * Activates the controller, allowing it to process events and trigger callbacks.
      * After calling this method, isEnabled() will return true.
@@ -145,6 +146,7 @@ class Controller {
 
     /**
      * @brief Disables the controller
+     * @return void
      *
      * Deactivates the controller, preventing it from processing events or triggering callbacks.
      * After calling this method, isEnabled() will return false.
