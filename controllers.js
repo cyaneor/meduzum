@@ -691,14 +691,24 @@ class MultiController extends ControllerInterface {
      * @brief Disposes all managed controllers
      *
      * Disposes this controller and propagates
-     * the dispose call to all registered sub-controllers,
-     * cleaning up all resources.
+     * the dispose call to all registered sub-controllers.
      */
     dispose() {
         this.setEnabled(false);
         this.__controllers.forEach(controller => {
             controller.dispose();
         });
+    }
+
+    /**
+     * @brief Clears all managed controllers and resets the collection
+     *
+     * Disposes all controllers and clears the internal collection,
+     * effectively resetting the multi-controller to its initial state.
+     */
+    clear() {
+        this.dispose();
+        this.__controllers = [];
     }
 
     /**
