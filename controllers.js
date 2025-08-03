@@ -83,7 +83,7 @@ class Controller {
         }
 
         /**
-         * @property {boolean} __isActivated - Activation state of the controller
+         * @property {boolean} __enabled - Activation state of the controller
          * @private
          */
         this.__enabled = false;
@@ -124,35 +124,24 @@ class Controller {
     }
 
     /**
-     * @brief Checks if the controller is currently enabled
-     * @return {boolean} True if the controller is enabled, false otherwise
-     *
-     * Indicates whether the controller is currently active and processing events.
+     * @brief Gets the current enabled state of the controller
+     * @return {boolean} True if the controller is enabled and will process events,
+     *                   false if the controller is disabled and will ignore events
      */
-    isEnabled() {
+    getEnabled() {
         return this.__enabled;
     }
 
     /**
-     * @brief Enables the controller
+     * @brief Sets the enabled state of the controller
+     * @param {boolean} enabled - Whether to enable or disable the controller
      * @return void
      *
-     * Activates the controller, allowing it to process events and trigger callbacks.
-     * After calling this method, isEnabled() will return true.
+     * Sets the controller's activation state,
+     * allowing or preventing it from processing events and triggering callbacks.
      */
-    enable() {
-        this.__enabled = true;
-    }
-
-    /**
-     * @brief Disables the controller
-     * @return void
-     *
-     * Deactivates the controller, preventing it from processing events or triggering callbacks.
-     * After calling this method, isEnabled() will return false.
-     */
-    disable() {
-        this.__enabled = false;
+    setEnabled(enabled) {
+        this.__enabled = enabled;
     }
 
     /**
@@ -204,7 +193,7 @@ class Controller {
      * - There are handlers registered for the event
      */
     trigger(event, ...args) {
-        if (this.isEnabled() && this.__handlers[event]) {
+        if (this.getEnabled() && this.__handlers[event]) {
             this.__handlers[event].forEach(handler => handler(...args));
         }
         return this;
@@ -342,7 +331,7 @@ class MouseController extends Controller {
         this.getDocument().addEventListener('mouseup', this.mouseUpHandler);
         this.getElement().addEventListener('mouseenter', this.mouseEnterHandler);
         this.getElement().addEventListener('mouseleave', this.mouseLeaveHandler);
-        this.enable();
+        this.setEnabled(true);
     }
 
     /**
@@ -358,7 +347,7 @@ class MouseController extends Controller {
         this.getDocument().removeEventListener('mouseup', this.mouseUpHandler);
         this.getElement().removeEventListener('mouseenter', this.mouseEnterHandler);
         this.getElement().removeEventListener('mouseleave', this.mouseLeaveHandler);
-        this.disable();
+        this.setEnabled(false);
     }
 }
 
@@ -490,7 +479,7 @@ class TouchController extends Controller {
         this.getElement().addEventListener('touchmove', this.touchMoveHandler, {passive: false});
         this.getElement().addEventListener('touchend', this.touchEndHandler);
         this.getElement().addEventListener('touchcancel', this.touchCancelHandler);
-        this.enable();
+        this.setEnabled(true);
     }
 
     /**
@@ -505,7 +494,7 @@ class TouchController extends Controller {
         this.getElement().removeEventListener('touchmove', this.touchMoveHandler);
         this.getElement().removeEventListener('touchend', this.touchEndHandler);
         this.getElement().removeEventListener('touchcancel', this.touchCancelHandler);
-        this.disable();
+        this.setEnabled(false);
     }
 }
 
@@ -558,8 +547,8 @@ class MultiController extends Controller {
      */
     addController(controller) {
         if (controller instanceof Controller) {
-            this.__controllers.push(controller);
-            if (this.isEnabled()) {
+            this.getControllers().push(controller);
+            if (this.getEnabled()) {
                 controller.initialize();
             }
             return this;
@@ -592,41 +581,29 @@ class MultiController extends Controller {
      * and disposes it if the controller is currently enabled.
      */
     removeController(controller) {
-        const index = this.__controllers.indexOf(controller);
+        const index = this.getControllers().indexOf(controller);
         if (index !== -1) {
-            if (controller.isEnabled()) {
+            if (controller.getEnabled()) {
                 controller.dispose();
             }
-            this.__controllers.splice(index, 1);
+            this.getControllers().splice(index, 1);
         }
         return this;
     }
 
     /**
-     * @brief Enables all managed controllers
+     * @brief Sets the enabled state of all managed controllers
      * @override
      *
-     * Enables this controller and propagates
-     * the enable call to all registered sub-controllers.
-     */
-    enable() {
-        super.enable();
-        this.getControllers().forEach(controller => {
-            controller.enable();
-        });
-    }
-
-    /**
-     * @brief Disables all managed controllers
-     * @override
+     * @param {boolean} enabled - Whether to enable or disable the controllers
      *
-     * Disables this controller and propagates
-     * the disable call to all registered sub-controllers.
+     * Sets the enabled state of this controller and propagates
+     * it to all registered sub-controllers.
      */
-    disable() {
-        super.disable();
+    setEnabled(enabled) {
+        super.setEnabled(enabled);
         this.getControllers().forEach(controller => {
-            controller.disable();
+            controller.setEnabled(enabled);
         });
     }
 
