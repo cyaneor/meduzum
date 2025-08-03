@@ -160,7 +160,6 @@ class Controller {
      * @param {string} event - Event name to register handler for
      * @param {function} callback - Callback function to register
      * @return {Controller} Returns the controller instance for chaining
-     * @memberof Controller
      *
      * Adds the provided callback to the specified event's handler list.
      * Creates the event handler array if it doesn't exist.
@@ -212,7 +211,7 @@ class Controller {
     /**
      * @brief Abstract method to initialize the controller
      * @abstract
-     * @memberof Controller
+     *
      * @throws {Error} If not implemented in derived class
      */
     initialize() {
@@ -222,7 +221,7 @@ class Controller {
     /**
      * @brief Abstract method to clean up controller resources
      * @abstract
-     * @memberof Controller
+     *
      * @throws {Error} If not implemented in derived class
      */
     dispose() {
