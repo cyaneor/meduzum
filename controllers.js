@@ -1,65 +1,170 @@
 /**
  * @file controllers.js
- * @brief Event controller framework for DOM interaction handling
+ * @brief Unified DOM Event Controller Framework
  *
  * @details
- * This module provides an abstract base class (Controller) and concrete implementations
- * (MouseController, TouchController) for handling DOM events in a structured way.
- * It also includes a composite MultiController for managing multiple controllers as a single unit.
+ * Comprehensive framework for abstracting and managing DOM event handling through a structured
+ * controller pattern. Provides base classes and concrete implementations for mouse, touch,
+ * and composite event handling scenarios.
  *
- * The framework features:
- * - Abstract base class with common event handling infrastructure
- * - Concrete implementations for mouse and touch input
- * - Composite controller pattern for grouped management
- * - Lifecycle management (initialize/dispose)
- * - Activation state control (enable/disable)
- * - Custom event triggering system
+ * @section features Key Features
+ * - Hierarchical controller architecture with abstract base implementation
+ * - Concrete controllers for mouse and touch input with unified event interfaces
+ * - Composite controller for managing multiple input sources as a single unit
+ * - Lifecycle management with initialization/disposal patterns
+ * - Custom event system with registration/triggering capabilities
+ * - Activation state control for all controllers
  *
- * @section architecture Architecture Overview
- * The Controller class serves as an abstract base providing:
- * - Event handler registration/unregistration
- * - Event triggering mechanism
- * - Activation state management
+ * @section architecture Core Architecture
+ * 1. AbstractController (Base Class)
+ *    - Event handler registry system
+ *    - Activation state management
+ *    - Element/document binding
+ *    - Abstract lifecycle methods
  *
- * Concrete implementations translate native DOM events into controller events:
- * - MouseController: 'start', 'move', 'end', 'enter', 'leave'
- * - TouchController: 'start', 'move', 'end', 'cancel'
+ * 2. Concrete Implementations:
+ *    - MouseController: Normalizes mouse events ('start', 'move', 'end', 'enter', 'leave')
+ *    - TouchController: Normalizes touch events ('start', 'move', 'end', 'cancel')
+ *      with touch capability detection
  *
- * MultiController provides composite functionality:
- * - Manages collection of child controllers
- * - Propagates lifecycle methods and events
- * - Enables batch operations
+ * 3. MultiController (Composite):
+ *    - Manages collection of child controllers
+ *    - Propagates lifecycle methods and events
+ *    - Enables batch operations
  *
- * @section usage Basic Usage Example
+ * @section usage Basic Usage Examples
+ * @subsection single Single Controller
  * @code
- * // Create mouse controller for element
  * const mouseCtrl = new MouseController(element);
- * mouseCtrl.registerCallback('move', (e) => console.log('Mouse moved', e));
+ * mouseCtrl.registerCallback('move', (e) => console.log(e.clientX, e.clientY));
  * mouseCtrl.initialize();
- *
- * // Create composite controller
- * const multiCtrl = new MultiController(element);
- * multiCtrl.createController(MouseController)
- *         .createController(TouchController);
- * multiCtrl.initialize();
  * @endcode
  *
- * @warning The base Controller class cannot be instantiated directly
- * @note All controllers require explicit initialization before use
+ * @subsection composite Composite Controller
+ * @code
+ * const multiCtrl = new MultiController(element);
+ * multiCtrl.createController(MouseController)
+ *         .createController(TouchController)
+ *         .registerCallback('start', () => console.log('Interaction started'))
+ *         .initialize();
+ * @endcode
  *
- * @see Controller
+ * @section notes Important Notes
+ * - All controllers require explicit initialization
+ * - Base classes cannot be instantiated directly
+ * - TouchController automatically checks for touch support
+ * - Event handlers receive normalized controller events
+ *
+ * @section compatibility Compatibility
+ * - Modern browsers with ES6 support
+ * - Touch events require touch-capable devices
+ * - Passive event listeners used where appropriate
+ *
+ * @warning Never instantiate AbstractController directly
+ * @note Consider using MultiController for complex interaction scenarios
+ *
+ * @see AbstractController
  * @see MouseController
  * @see TouchController
  * @see MultiController
  *
  * @author Egor Tsyganchuk
  * @date 2025-02-08
- * @version 1.0.0
+ * @version 1.1.0
  * @license MIT
  */
 
 /**
- * @class Controller
+ * @interface ControllerInterface
+ * @brief Abstract base class providing event handling infrastructure
+ *
+ * The Controller class serves as an abstract base class for concrete controller implementations.
+ * It provides basic event handling capabilities and activation state management.
+ *
+ * @warning This class is interface and cannot be instantiated directly.
+ */
+class ControllerInterface {
+    /**
+     * @brief Constructor for the abstract Controller class
+     * @throws {Error} If instantiated directly (without inheritance)
+     */
+    constructor() {
+        if (new.target === ControllerInterface) {
+            throw new Error("Cannot instantiate interface class 'ControllerInterface' directly");
+        }
+    }
+
+    /**
+     * @brief Gets the controlled DOM element
+     * @return {HTMLElement} The controlled element
+     */
+    getElement() {
+    }
+
+    /**
+     * @brief Gets the document instance used for global events
+     * @return {Document} The document instance
+     */
+    getDocument() {
+    }
+
+    /**
+     * @brief Gets the current enabled state of the controller
+     * @return {boolean} True if active, false if inactive
+     */
+    getEnabled() {
+    }
+
+    /**
+     * @brief Sets the enabled state of the controller
+     * @param {boolean} enabled - Whether to enable or disable
+     * @return void
+     */
+    setEnabled(enabled) {
+    }
+
+    /**
+     * @brief Registers a callback for a specific event
+     * @param {string} event - Event name to register handler for
+     * @param {function} callback - Callback function to register
+     * @return {ControllerInterface} Returns this for chaining
+     */
+    registerCallback(event, callback) {
+    }
+
+    /**
+     * @brief Unregisters a callback for a specific event
+     * @param {string} event - Event name to unregister from
+     * @param {function} callback - Callback function to remove
+     * @return {ControllerInterface} Returns this for chaining
+     */
+    unregisterCallback(event, callback) {
+    }
+
+    /**
+     * @brief Triggers registered handlers for a specific event
+     * @param {string} event - Event name to trigger
+     * @param {...*} args - Arguments to pass to handlers
+     * @return {ControllerInterface} Returns this for chaining
+     */
+    trigger(event, ...args) {
+    }
+
+    /**
+     * @brief Abstract method to initialize the controller
+     */
+    initialize() {
+    }
+
+    /**
+     * @brief Abstract method to clean up controller resources
+     */
+    dispose() {
+    }
+}
+
+/**
+ * @abstract AbstractController
  * @brief Abstract base class providing event handling infrastructure
  *
  * The Controller class serves as an abstract base class for concrete controller implementations.
@@ -67,19 +172,17 @@
  *
  * @warning This class is abstract and cannot be instantiated directly.
  */
-class Controller {
+class AbstractController extends ControllerInterface {
     /**
      * @brief Constructor for the abstract Controller class
      * @param {HTMLElement} element - DOM element to monitor for events
      * @param {Document} [doc=document] - Document instance to register global events
      * @throws {Error} If instantiated directly (without inheritance)
-     *
-     * Initializes the controller with default inactive state and empty event handlers.
-     * The constructor enforces abstract class pattern by checking new.target.
      */
     constructor(element, doc = document) {
-        if (new.target === Controller) {
-            throw new Error("Cannot instantiate abstract class 'Controller' directly");
+        super();
+        if (new.target === AbstractController) {
+            throw new Error("Cannot instantiate abstract class 'AbstractController' directly");
         }
 
         /**
@@ -125,8 +228,7 @@ class Controller {
 
     /**
      * @brief Gets the current enabled state of the controller
-     * @return {boolean} True if the controller is enabled and will process events,
-     *                   false if the controller is disabled and will ignore events
+     * @return {boolean} True if enabled, false if disabled
      */
     getEnabled() {
         return this.__enabled;
@@ -134,11 +236,8 @@ class Controller {
 
     /**
      * @brief Sets the enabled state of the controller
-     * @param {boolean} enabled - Whether to enable or disable the controller
+     * @param {boolean} enabled - Whether to enable or disable
      * @return void
-     *
-     * Sets the controller's activation state,
-     * allowing or preventing it from processing events and triggering callbacks.
      */
     setEnabled(enabled) {
         this.__enabled = enabled;
@@ -148,28 +247,21 @@ class Controller {
      * @brief Registers a callback for a specific event
      * @param {string} event - Event name to register handler for
      * @param {function} callback - Callback function to register
-     * @return {Controller} Returns the controller instance for chaining
-     *
-     * Adds the provided callback to the specified event's handler list.
-     * Creates the event handler array if it doesn't exist.
+     * @return {AbstractController} Returns this for chaining
      */
     registerCallback(event, callback) {
         if (!this.__handlers[event]) {
             this.__handlers[event] = [];
         }
-
         this.__handlers[event].push(callback);
         return this;
     }
 
     /**
      * @brief Unregisters a callback for a specific event
-     * @param {string} event Event name to unregister handler from
-     * @param {function} callback Callback function to unregister
-     * @return {Controller} Returns the controller instance for chaining
-     *
-     * Removes the provided callback from the specified event's handler list.
-     * Does nothing if the callback wasn't registered.
+     * @param {string} event - Event name to unregister from
+     * @param {function} callback - Callback function to remove
+     * @return {AbstractController} Returns this for chaining
      */
     unregisterCallback(event, callback) {
         if (this.__handlers[event]) {
@@ -180,17 +272,9 @@ class Controller {
 
     /**
      * @brief Triggers registered handlers for a specific event
-     * @param {string} event - Event name to trigger (must match a handlers property)
-     * @param {...*} args - Arguments to pass to the event handlers
-     * @return {Controller} Returns the controller instance for chaining
-     *
-     * Executes all registered handlers
-     * for the specified event if the controller is active.
-     *
-     * Only triggers handlers if:
-     * - The controller is active (isActivate === true)
-     * - The event exists in the handlers object
-     * - There are handlers registered for the event
+     * @param {string} event - Event name to trigger
+     * @param {...*} args - Arguments to pass to handlers
+     * @return {AbstractController} Returns this for chaining
      */
     trigger(event, ...args) {
         if (this.getEnabled() && this.__handlers[event]) {
@@ -198,38 +282,18 @@ class Controller {
         }
         return this;
     }
-
-    /**
-     * @brief Abstract method to initialize the controller
-     * @abstract
-     *
-     * @throws {Error} If not implemented in derived class
-     */
-    initialize() {
-        throw new Error("Method 'initialize()' must be implemented");
-    }
-
-    /**
-     * @brief Abstract method to clean up controller resources
-     * @abstract
-     *
-     * @throws {Error} If not implemented in derived class
-     */
-    dispose() {
-        throw new Error("Method 'dispose()' must be implemented");
-    }
 }
 
 /**
  * @class MouseController
  * @brief Concrete controller implementation for mouse event handling
- * @extends Controller
+ * @extends AbstractController
  *
  * The MouseController class provides mouse event handling capabilities
  * for a specific DOM element. It translates native mouse events into
  * controller events ('start', 'move', 'end', 'enter', 'leave') with proper activation state management.
  */
-class MouseController extends Controller {
+class MouseController extends AbstractController {
     /**
      * @brief Handles mouse down events
      * @param {MouseEvent} e - The mouse event object
@@ -320,7 +384,6 @@ class MouseController extends Controller {
 
     /**
      * @brief Initializes the mouse controller
-     * @override
      *
      * Sets up event listeners on both the element (for mousedown, mouseenter, mouseleave)
      * and document (for mousemove/mouseup) and activates the controller.
@@ -336,7 +399,6 @@ class MouseController extends Controller {
 
     /**
      * @brief Cleans up the mouse controller
-     * @override
      *
      * Removes all event listeners and deactivates the controller.
      * Should be called when the controller is no longer needed.
@@ -354,13 +416,13 @@ class MouseController extends Controller {
 /**
  * @class TouchController
  * @brief Concrete controller implementation for touch event handling
- * @extends Controller
+ * @extends AbstractController
  *
  * The TouchController class provides touch event handling capabilities
  * for a specific DOM element. It translates native touch events into
  * controller events ('start', 'move', 'end', 'cancel') with proper activation state management.
  */
-class TouchController extends Controller {
+class TouchController extends AbstractController {
     /**
      * @brief Gets the maximum number of simultaneous touch points supported by the device
      * @return {number} Maximum number of touch points or 0 if not supported
@@ -501,7 +563,7 @@ class TouchController extends Controller {
 /**
  * @class MultiController
  * @brief Composite controller that manages multiple sub-controllers
- * @extends Controller
+ * @extends AbstractController
  *
  * The MultiController class provides functionality
  * to manage multiple Controller instances as a single unit.
@@ -509,7 +571,7 @@ class TouchController extends Controller {
  * It propagates lifecycle methods (enable/disable/initialize/dispose)
  * and events to all registered sub-controllers.
  */
-class MultiController extends Controller {
+class MultiController extends AbstractController {
     /**
      * @brief Constructor for MultiController
      * @param {HTMLElement} element - DOM element associated with this controller
@@ -522,23 +584,15 @@ class MultiController extends Controller {
         super(element, doc);
 
         /**
-         * @property {Array<Controller>} __controllers - Registered sub-controllers
+         * @property {Array<ControllerInterface>} __controllers - Registered sub-controllers
          * @private
          */
         this.__controllers = [];
     }
 
     /**
-     * @brief Gets all registered sub-controllers
-     * @return {Array<Controller>} Array of registered controllers
-     */
-    getControllers() {
-        return this.__controllers;
-    }
-
-    /**
      * @brief Adds a controller to the managed collection
-     * @param {Controller} controller - Controller instance to add
+     * @param {ControllerInterface} controller - Controller instance to add
      * @return {MultiController} Returns this instance for method chaining
      * @throws {Error} Throws an error if parameter is not a Controller instance
      *
@@ -546,8 +600,8 @@ class MultiController extends Controller {
      * and initializes it if this multi-controller is currently enabled.
      */
     addController(controller) {
-        if (controller instanceof Controller) {
-            this.getControllers().push(controller);
+        if (controller instanceof ControllerInterface) {
+            this.__controllers.push(controller);
             if (this.getEnabled()) {
                 controller.initialize();
             }
@@ -574,19 +628,19 @@ class MultiController extends Controller {
 
     /**
      * @brief Removes a controller from the managed collection
-     * @param {Controller} controller - Controller instance to remove
+     * @param {ControllerInterface} controller - Controller instance to remove
      * @return {MultiController} Returns this instance for method chaining
      *
      * Removes the specified controller from the collection
      * and disposes it if the controller is currently enabled.
      */
     removeController(controller) {
-        const index = this.getControllers().indexOf(controller);
+        const index = this.__controllers.indexOf(controller);
         if (index !== -1) {
             if (controller.getEnabled()) {
                 controller.dispose();
             }
-            this.getControllers().splice(index, 1);
+            this.__controllers.splice(index, 1);
         }
         return this;
     }
@@ -602,7 +656,7 @@ class MultiController extends Controller {
      */
     setEnabled(enabled) {
         super.setEnabled(enabled);
-        this.getControllers().forEach(controller => {
+        this.__controllers.forEach(controller => {
             controller.setEnabled(enabled);
         });
     }
@@ -616,7 +670,7 @@ class MultiController extends Controller {
      */
     initialize() {
         super.initialize();
-        this.getControllers().forEach(controller => {
+        this.__controllers.forEach(controller => {
             controller.initialize();
         });
     }
@@ -631,7 +685,7 @@ class MultiController extends Controller {
      */
     dispose() {
         super.dispose();
-        this.getControllers().forEach(controller => {
+        this.__controllers.forEach(controller => {
             controller.dispose();
         });
     }
@@ -649,11 +703,11 @@ class MultiController extends Controller {
      */
     trigger(event, ...args) {
         super.trigger(event, ...args);
-        this.getControllers().forEach(controller => {
+        this.__controllers.forEach(controller => {
             controller.trigger(event, ...args);
         });
         return this;
     }
 }
 
-export {Controller, MouseController, TouchController, MultiController};
+export {AbstractController, MouseController, TouchController, MultiController};
