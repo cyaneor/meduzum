@@ -665,6 +665,7 @@ class MultiController extends Controller {
      *
      * @param {string} event - Event name to trigger
      * @param {...*} args - Arguments to pass to event handlers
+     * @return {MultiController} Returns the multi-controller instance for chaining
      *
      * Triggers the specified event on this controller
      * and propagates it to all registered sub-controllers.
@@ -674,6 +675,7 @@ class MultiController extends Controller {
         this.getControllers().forEach(controller => {
             controller.trigger(event, ...args);
         });
+        return this;
     }
 }
 
