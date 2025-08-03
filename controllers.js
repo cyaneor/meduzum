@@ -571,7 +571,7 @@ class TouchController extends AbstractController {
  * It propagates lifecycle methods (enable/disable/initialize/dispose)
  * and events to all registered sub-controllers.
  */
-class MultiController extends AbstractController {
+class MultiController extends ControllerInterface {
     /**
      * @brief Constructor for MultiController
      * @param {HTMLElement} element - DOM element associated with this controller
@@ -582,6 +582,12 @@ class MultiController extends AbstractController {
      */
     constructor(element, doc = document) {
         super(element, doc);
+
+        /**
+         * @property {boolean} __enabled - Activation state of the controller
+         * @private
+         */
+        this.__enabled = false;
 
         /**
          * @property {Array<ControllerInterface>} __controllers - Registered sub-controllers
@@ -646,6 +652,14 @@ class MultiController extends AbstractController {
     }
 
     /**
+     * @brief Gets the current enabled state of the controller
+     * @return {boolean} True if active, false if inactive
+     */
+    getEnabled() {
+        return this.__enabled;
+    }
+
+    /**
      * @override
      * @brief Sets the enabled state of all managed controllers
      * @param {boolean} enabled - Whether to enable or disable the controllers
@@ -654,7 +668,7 @@ class MultiController extends AbstractController {
      * it to all registered sub-controllers.
      */
     setEnabled(enabled) {
-        super.setEnabled(enabled);
+        this.__enabled = enabled;
         this.__controllers.forEach(controller => {
             controller.setEnabled(enabled);
         });
@@ -667,7 +681,7 @@ class MultiController extends AbstractController {
      * the initialize call to all registered sub-controllers.
      */
     initialize() {
-        super.initialize();
+        this.setEnabled(true);
         this.__controllers.forEach(controller => {
             controller.initialize();
         });
@@ -681,14 +695,13 @@ class MultiController extends AbstractController {
      * cleaning up all resources.
      */
     dispose() {
-        super.dispose();
+        this.setEnabled(false);
         this.__controllers.forEach(controller => {
             controller.dispose();
         });
     }
 
     /**
-     * @override
      * @brief Triggers an event on all managed controllers
      *
      * @param {string} event - Event name to trigger
@@ -699,10 +712,11 @@ class MultiController extends AbstractController {
      * and propagates it to all registered sub-controllers.
      */
     trigger(event, ...args) {
-        super.trigger(event, ...args);
-        this.__controllers.forEach(controller => {
-            controller.trigger(event, ...args);
-        });
+        if (this.getEnabled()) {
+            this.__controllers.forEach(controller => {
+                controller.trigger(event, ...args);
+            });
+        }
         return this;
     }
 }
