@@ -193,6 +193,7 @@ class Controller {
      * @brief Triggers registered handlers for a specific event
      * @param {string} event - Event name to trigger (must match a handlers property)
      * @param {...*} args - Arguments to pass to the event handlers
+     * @return {Controller} Returns the controller instance for chaining
      *
      * Executes all registered handlers
      * for the specified event if the controller is active.
@@ -206,6 +207,7 @@ class Controller {
         if (this.isEnabled() && this.__handlers[event]) {
             this.__handlers[event].forEach(handler => handler(...args));
         }
+        return this;
     }
 
     /**
